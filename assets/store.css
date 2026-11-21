@@ -284,3 +284,26 @@ body:is(.theme-wood, .theme-bloom) {
     :is(.theme-wood, .theme-bloom) :is(.row, .filters) { scrollbar-color: rgba(212,173,102,.6) var(--surface-2); }
   }
 }
+
+/* Where the price comes from (D13 / PKM-031, 2026-11-21): the classic page's source box (index.html basisBox) — one
+   framed panel, gold-leaf edge, a coloured source tile (green TCGplayer sales, blue TCGplayer market, amber Collectr
+   graded, vermilion the seller's own price, slate other), the 3-month sales count, then last sale · updated. */
+.basis { margin: 4px 0 16px; border-radius: 16px; border: 1.5px solid rgba(212,173,102,.38);
+  background: linear-gradient(180deg, rgba(255,235,210,.05), rgba(0,0,0,.18)); }
+.basis-top { display: flex; align-items: center; gap: 12px; padding: 13px 15px; }
+.basis-ic { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; background-color: #94a3b8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Crect x='3' y='10' width='3.2' height='7' rx='1'/%3E%3Crect x='8.4' y='6' width='3.2' height='11' rx='1'/%3E%3Crect x='13.8' y='3' width='3.2' height='14' rx='1'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center; background-size: 18px; }
+.src-tcg-sales .basis-ic { background-color: #22c55e; }
+.src-tcg-market .basis-ic { background-color: #3b82f6; }
+.src-collectr-graded .basis-ic { background-color: #f59e0b; }
+.src-seller .basis-ic { background-color: #b0412f; }
+.basis-mid { flex: 1; min-width: 0; }
+.basis-mid p { margin: 0; }
+.basis-t { font-size: 14px; font-weight: 700; color: var(--text); }
+.basis-k { font-size: 12px; color: var(--text-3); margin-top: 2px !important; }
+.basis-n { text-align: right; flex-shrink: 0; }
+.basis-n p { margin: 0; }
+.basis-nl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+.basis-nv { font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.basis-f { margin: 0; padding: 9px 15px 11px; border-top: 1px solid rgba(212,173,102,.18); font-size: 12px; color: var(--text-3); }

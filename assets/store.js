@@ -6,6 +6,72 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var D = { cards: [], byId: {}, byKey: {}, aliases: {} }, view = [], shown = 0, PAGE = 40;
   var cfgEl = $("#cfg");
+  function cfg(k) { return (cfgEl && cfgEl.getAttribute("data-" + k)) || ""; }
+  var FORM = null; try { FORM = cfg("form") ? JSON.parse(cfg("form")) : null; } catch (e) { FORM = null; }
+
+  // ---------- views (the hero metric: sticker scans + card opens) ----------
+  // PKM-031 (2026-11-21): the classic page counts every card open in GoatCounter as /card/CC-####; goat_pull reads
+  // those into the trending shelf + Andy's digest. Since the switch the scans land HERE, so this store counts the same
+  // paths. Image pings (the CSP allows https images, never outside scripts); only on the real host, never a preview.
+  function count(path, title) {
+    var url = cfg("count"), host = cfg("count-host");
+    if (!url || location.hostname !== host) return;
+    try { new Image().src = url + "?p=" + encodeURIComponent(path) + "&t=" + encodeURIComponent(title || "")
+      + "&r=" + encodeURIComponent(document.referrer || "") + "&rnd=" + Math.random().toString(36).slice(2); } catch (e) {}
+  }
+
+  // ---------- requests ----------
+  // The live store's own transport (classic index.html sendMsg): a silent POST to its Google Form, whose responses the
+  // pulse's form-fixes intake turns into Andy's "people who want to buy" email. It finds the card by `cc:` (CC id) or
+  // `card_id:` (sticker slug), so this block keeps the classic page's keys exactly. No address of anyone ships here.
+  function sendBuy(c, contact, note) {
+    if (!FORM || !FORM.action || !FORM.f) return false;
+    var body = "A buy request came in from the storefront.\n\n---\ntype: buy-request\ncard_id: " + c.k + "\ncc: " + c.id
+      + "\nname: " + c.n + "\nset: " + c.s + "\nprice: " + (c.p == null ? "" : c.p) + "\ncontact: " + contact
+      + "\nurl: " + location.origin + location.pathname + "#" + c.k + "\n---\n\n" + (note || "(no note)") + "\n";
+    var fd = new FormData();
+    fd.append(FORM.f.type, "buy-request");
+    fd.append(FORM.f.subject, "[BUY] " + c.n + " (" + c.id + ") — $" + (c.p == null ? "?" : c.p));
+    fd.append(FORM.f.message, body);
+    fd.append(FORM.f.contact, contact);
+    // no-cors: Google accepts the POST but the reply is opaque (the classic page's deal too, PKM-004)
+    fetch(FORM.action, { method: "POST", mode: "no-cors", body: fd }).catch(function () {});
+    return true;
+  }
+
+  // ---------- where the price comes from (D13, the classic page's source box) ----------
+  var BASIS_TITLE = { "tcg-sales": "TCGplayer sales", "tcg-market": "TCGplayer market", "collectr": "Collectr market",
+    "collectr-graded": "Collectr market", "seller": "Couples Collective price" };
+  var BASIS_WHY = { "no-recent-sales": "No TCGplayer sales like this one in the last 3 months",
+    "no-match": "Not matched to a TCGplayer listing yet", "printing": "TCGplayer's sales were for a different printing",
+    "graded": "No graded sales source yet" };
+  var DAY = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
+  function day(s) { var p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }    // a calendar day, local
+  function dayText(s) { return DAY.format(day(s)); }
+  function when(s) { return s.indexOf("T") !== -1 ? new Date(s).toLocaleString(undefined, { month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit", timeZoneName: "short" }) : dayText(s); }
+  function basisBox(c) {
+    var b = c.b, title = b && BASIS_TITLE[b.source];
+    if (!title) return el("p", "sh-src", "Sticker " + c.id);
+    var box = el("div", "basis src-" + b.source), top = el("div", "basis-top");
+    top.appendChild(el("span", "basis-ic"));
+    var mid = el("div", "basis-mid");
+    mid.appendChild(el("p", "basis-t", title)); mid.appendChild(el("p", "basis-k", b.kind || ""));
+    if (BASIS_WHY[b.why]) mid.appendChild(el("p", "basis-k", BASIS_WHY[b.why]));
+    top.appendChild(mid);
+    if (b.sales_3mo) {
+      var n = el("div", "basis-n"); n.appendChild(el("p", "basis-nl", "Sales · 3 mo"));
+      n.appendChild(el("p", "basis-nv", (+b.sales_3mo).toLocaleString())); top.appendChild(n);
+    }
+    box.appendChild(top);
+    var foot = [];
+    if (b.last_sale && b.last_sale.length) foot.push("Last sale " + (b.last_sale[0] === b.last_sale[1] || !b.last_sale[1]
+      ? dayText(b.last_sale[0]) : dayText(b.last_sale[0]) + " – " + dayText(b.last_sale[1])));
+    if (b.checked) foot.push("Updated " + when(b.checked));
+    foot.push("Sticker " + c.id);
+    box.appendChild(el("p", "basis-f", foot.join(" · ")));
+    return box;
+  }
 
   function money(v) { if (v === null || v === undefined) return ""; v = +v;
     return v === Math.round(v) ? "$" + v.toLocaleString() : "$" + v.toFixed(2); }
@@ -78,28 +144,26 @@
       var pr = el("div", "sh-price"); pr.appendChild(el("b", "", money(c.p)));
       if (c.w) pr.appendChild(el("s", "was", "was " + money(c.w)));
       body.appendChild(pr);
-      body.appendChild(el("p", "sh-src", "Priced from real recent sales · Sticker " + c.id));
+      body.appendChild(basisBox(c));
       var btns = el("div", "btns"), want = el("button", "cta", "I want this card"), share = el("button", "ghost", "Share");
       btns.appendChild(want); btns.appendChild(share); body.appendChild(btns);
       var form = el("form", "buy"); form.hidden = true;
       var who = el("input"); who.placeholder = "Your phone or email"; who.required = true; who.autocomplete = "email";
       var note = el("textarea"); note.placeholder = "Anything we should know? (optional)"; note.rows = 2;
       var send = el("button", "cta", "Send request"); send.type = "submit";
-      var dev = cfgEl && cfgEl.getAttribute("data-buy-note");
+      var dev = cfg("buy-note");
       form.appendChild(who); form.appendChild(note); form.appendChild(send);
       if (dev) form.appendChild(el("p", "note", dev));
       body.appendChild(form);
-      // 2026-11-21 (PKM-031 switch): until requests are built in here, "I want this card" opens the SAME card on the
-      // classic store, whose request flow is the real one (this form sends nothing).
-      var buyUrl = cfgEl && cfgEl.getAttribute("data-buy-url");
-      want.addEventListener("click", function () {
-        if (buyUrl) { location.href = buyUrl + "#" + encodeURIComponent(c.k); return; }
-        form.hidden = false; who.focus();
-      });
+      want.addEventListener("click", function () { form.hidden = false; who.focus(); });
       form.addEventListener("submit", function (e) {
         e.preventDefault();
+        var contact = who.value.trim();
+        if (!contact) { who.focus(); return; }        // a request we can't answer is a lost sale (classic rule)
+        var sent = dev ? false : sendBuy(c, contact, note.value.trim());
         form.textContent = "";
-        form.appendChild(el("p", "ok", dev ? "Looks good. (Dev preview: nothing was sent.)" : "Request sent. We'll be in touch soon."));
+        form.appendChild(el("p", sent ? "ok" : "note", dev ? "Looks good. (Dev preview: nothing was sent.)"
+          : sent ? "Request sent. We'll be in touch soon." : "Requests are temporarily unavailable. Please try again later."));
       });
       share.addEventListener("click", function () {
         var url = location.origin + location.pathname.replace(/index\.html$/, "") + "card/" + c.id + "/";
@@ -114,6 +178,7 @@
     }
     $("#sheet").hidden = false; document.body.style.overflow = "hidden"; $("#sheet .sheet-in").scrollTop = 0;
   }
+  function openAndCount(c) { openCard(c); count("/card/" + c.id, c.n + (c.st === "sold" ? " (sold)" : "")); }
   function closeCard() { $("#sheet").hidden = true; document.body.style.overflow = ""; }
 
   function resolve(key) {
@@ -126,7 +191,7 @@
     var key = decodeURIComponent(location.hash.slice(1));
     if (!key || key === "shop" || key === "headliners" || key === "new" || key === "trending" || key === "drops" || key === "binder") { closeCard(); return; }
     var c = resolve(key);
-    if (c) openCard(c); else closeCard();
+    if (c) openAndCount(c); else closeCard();
   }
 
   // ---------- wire up ----------
@@ -151,6 +216,7 @@
   fetch("catalog.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (j) {
     D.cards = j.cards; D.aliases = j.aliases || {};
     j.cards.forEach(function (c) { D.byId[c.id] = c; if (c.k) D.byKey[c.k] = c; });
+    count(location.pathname, document.title);       // the page view (classic: GoatCounter's own base count)
     applyFilters(); route();
     window.__ready = true;          // the catalog is loaded (sticker_scan waits for this)
   });
