@@ -89,7 +89,13 @@
       form.appendChild(who); form.appendChild(note); form.appendChild(send);
       if (dev) form.appendChild(el("p", "note", dev));
       body.appendChild(form);
-      want.addEventListener("click", function () { form.hidden = false; who.focus(); });
+      // 2026-11-21 (PKM-031 switch): until requests are built in here, "I want this card" opens the SAME card on the
+      // classic store, whose request flow is the real one (this form sends nothing).
+      var buyUrl = cfgEl && cfgEl.getAttribute("data-buy-url");
+      want.addEventListener("click", function () {
+        if (buyUrl) { location.href = buyUrl + "#" + encodeURIComponent(c.k); return; }
+        form.hidden = false; who.focus();
+      });
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         form.textContent = "";
