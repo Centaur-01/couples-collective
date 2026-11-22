@@ -119,9 +119,6 @@
     // while a filter is on, the shelves step aside so the results sit right under the filters (2026-11-21)
     document.body.classList.toggle("filtering", filtering);
     $("#clear").hidden = !filtering;
-    Array.prototype.forEach.call(document.querySelectorAll(".erachip"), function (b) {
-      var on = b.getAttribute("data-era") === era; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
   }
   // the search bar to the top: filters, chips and (shelves hidden) the results all in view together
   function toResults() { $(".find").scrollIntoView({ behavior: "smooth", block: "start" }); }
@@ -223,10 +220,6 @@
     $("#q").value = ""; ["#era", "#lang", "#kind"].forEach(function (s) { if ($(s)) $(s).value = ""; }); applyFilters();
   });
   $("#more").addEventListener("click", more);
-  document.addEventListener("click", function (e) {
-    var era = e.target.closest("[data-era]"); if (!era) return;
-    $("#era").value = era.getAttribute("data-era"); applyFilters(); toResults();
-  });
 
   fetch("catalog.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (j) {
     D.cards = j.cards; D.aliases = j.aliases || {};

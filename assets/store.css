@@ -64,19 +64,11 @@ main { max-width: 1180px; margin: 0 auto; }
 
 
 /* Filters live under the search bar (2026-11-21, Jack: "all the filters should be towards the top ... near the search
-   bar"): a 2-up grid of selects on phones (4-up wider), then the era chips as one swipeable row. */
+   bar"): a 2-up grid of selects on phones (4-up wider). */
 .find { scroll-margin-top: 66px; }                        /* clears the sticky bar when filtering scrolls here */
 .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 10px 0 0; }
 .filters select { font: 600 14px var(--font); padding: 10px 10px; border-radius: 12px; border: 1px solid var(--line);
   background: var(--surface); color: var(--text); width: 100%; min-width: 0; }
-.erachips { display: flex; gap: 8px; overflow-x: auto; margin: 10px -16px 0; padding: 2px 16px 4px;
-  scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.erachips::-webkit-scrollbar { display: none; }
-.erachip { flex: none; font: 650 13px var(--font); padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line);
-  background: var(--surface); color: var(--text-2); cursor: pointer; white-space: nowrap; }
-.erachip span { margin-left: 6px; font-weight: 600; color: var(--text-3); font-variant-numeric: tabular-nums; }
-.erachip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.erachip.on span { color: inherit; opacity: .8; }
 .clear { font: 650 13px var(--font); margin-left: 8px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line);
   background: transparent; color: var(--text-2); cursor: pointer; }
 body.filtering .shelf, body.filtering .promise { display: none; }   /* results right under the filters */
@@ -184,7 +176,7 @@ body.theme-bloom {
 .theme-bloom .badge { background: linear-gradient(135deg, rgba(255,95,174,.92), rgba(168,85,247,.92)); color: #fff; }
 .theme-bloom .tp { color: #fff; }
 .theme-bloom .was { color: var(--bloom-pink); }
-.theme-bloom :is(.filters select, .erachip) { background: rgba(20,16,32,.9); border-color: rgba(180,140,255,.3); }
+.theme-bloom .filters select { background: rgba(20,16,32,.9); border-color: rgba(180,140,255,.3); }
 .theme-bloom .morebtn { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #fff; }
 .theme-bloom .sheet { background: rgba(4,2,8,.72); }
 .theme-bloom .sheet-in { background: radial-gradient(600px 300px at 50% -10%, rgba(168,85,247,.25), transparent 70%), #0d0a16;
@@ -246,8 +238,7 @@ body:is(.theme-wood, .theme-bloom) {
 :is(.theme-wood, .theme-bloom) .badge { background: var(--accent); color: var(--accent-ink); }
 :is(.theme-wood, .theme-bloom) .tp { color: var(--kin); }
 :is(.theme-wood, .theme-bloom) .was { color: #e08872; }
-:is(.theme-wood, .theme-bloom) .erachip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-:is(.theme-wood, .theme-bloom) :is(.filters select, .erachip, .clear) { background: rgba(27,21,17,.95); border-color: var(--line); color: var(--text); }
+:is(.theme-wood, .theme-bloom) :is(.filters select, .clear) { background: rgba(27,21,17,.95); border-color: var(--line); color: var(--text); }
 :is(.theme-wood, .theme-bloom) .morebtn { background: linear-gradient(180deg, #c5533f, var(--accent)); color: var(--accent-ink); }
 :is(.theme-wood, .theme-bloom) .sheet { background: rgba(8,6,4,.78); }
 :is(.theme-wood, .theme-bloom) .sheet-in { background: radial-gradient(600px 300px at 50% -10%, rgba(212,173,102,.12), transparent 70%), #1b1511;
