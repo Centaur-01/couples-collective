@@ -95,11 +95,13 @@
 
   // ---------- grid ----------
   function applyFilters() {
-    var q = ($("#q").value || "").trim().toLowerCase(), era = $("#era").value, kind = $("#kind").value, sort = $("#sort").value;
+    var q = ($("#q").value || "").trim().toLowerCase(), era = $("#era").value, kind = $("#kind").value, sort = $("#sort").value,
+        lang = $("#lang") ? $("#lang").value : "";
     var words = q ? q.split(/\s+/) : [];
     view = D.cards.filter(function (c) {
       if (c.st !== "for_sale") return false;
       if (era && c.e !== era) return false;
+      if (lang && c.l !== lang) return false;
       if (kind === "slab" && !c.g) return false;
       if (kind === "raw" && c.g) return false;
       if (!words.length) return true;
@@ -112,8 +114,17 @@
       return (b.p || 0) - (a.p || 0);
     });
     shown = 0; $("#grid").textContent = ""; more();
-    $("#count").textContent = view.length.toLocaleString() + (view.length === 1 ? " card" : " cards") + (q || era || kind ? " match" : " for sale");
+    var filtering = !!(q || era || kind || lang);
+    $("#count").textContent = view.length.toLocaleString() + (view.length === 1 ? " card" : " cards") + (filtering ? " match" : " for sale");
+    // while a filter is on, the shelves step aside so the results sit right under the filters (2026-11-21)
+    document.body.classList.toggle("filtering", filtering);
+    $("#clear").hidden = !filtering;
+    Array.prototype.forEach.call(document.querySelectorAll(".erachip"), function (b) {
+      var on = b.getAttribute("data-era") === era; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
   }
+  // the search bar to the top: filters, chips and (shelves hidden) the results all in view together
+  function toResults() { $(".find").scrollIntoView({ behavior: "smooth", block: "start" }); }
   function more() {
     var g = $("#grid"), next = view.slice(shown, shown + PAGE);
     if (!view.length) g.appendChild(el("div", "empty", "No cards match. Try fewer words or another era."));
@@ -205,13 +216,16 @@
   window.__open = function (key) { var c = resolve(key); if (c) openCard(c); else closeCard(); return c ? c.id : null; };
   var timer;
   $("#q").addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(function () {
-    applyFilters(); if ($("#q").value) $("#shop").scrollIntoView({ behavior: "smooth" }); }, 180); });
-  $(".find").addEventListener("submit", function (e) { e.preventDefault(); applyFilters(); $("#shop").scrollIntoView({ behavior: "smooth" }); });
-  ["#era", "#kind", "#sort"].forEach(function (s) { $(s).addEventListener("change", applyFilters); });
+    applyFilters(); if ($("#q").value) toResults(); }, 180); });
+  $(".find").addEventListener("submit", function (e) { e.preventDefault(); applyFilters(); toResults(); });
+  ["#era", "#lang", "#kind", "#sort"].forEach(function (s) { if ($(s)) $(s).addEventListener("change", function () { applyFilters(); toResults(); }); });
+  $("#clear").addEventListener("click", function () {
+    $("#q").value = ""; ["#era", "#lang", "#kind"].forEach(function (s) { if ($(s)) $(s).value = ""; }); applyFilters();
+  });
   $("#more").addEventListener("click", more);
   document.addEventListener("click", function (e) {
     var era = e.target.closest("[data-era]"); if (!era) return;
-    $("#era").value = era.getAttribute("data-era"); applyFilters();
+    $("#era").value = era.getAttribute("data-era"); applyFilters(); toResults();
   });
 
   fetch("catalog.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (j) {
