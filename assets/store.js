@@ -44,7 +44,8 @@
     "collectr-graded": "Collectr market", "seller": "Couples Collective price" };
   var BASIS_WHY = { "no-recent-sales": "No TCGplayer sales like this one in the last 3 months",
     "no-match": "Not matched to a TCGplayer listing yet", "printing": "TCGplayer's sales were for a different printing",
-    "graded": "No graded sales source yet" };
+    "graded": "No graded sales source yet", "review": "A newer price is waiting on the seller's review",
+    "kept": "The seller is keeping this price for now" };
   var DAY = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
   function day(s) { var p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }    // a calendar day, local
   function dayText(s) { return DAY.format(day(s)); }
