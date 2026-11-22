@@ -86,6 +86,7 @@
     else art.appendChild(el("span", "noimg"));
     var badge = c.g || (c.c && c.c !== "Near Mint" ? c.c : "");
     if (badge) art.appendChild(el("b", "badge", badge));
+    if (c.o) art.appendChild(el("b", "osband", "Oversize"));          // big OVERSIZE band (2026-11-21)
     a.appendChild(art); a.appendChild(el("span", "tn", c.n)); a.appendChild(el("span", "ts", c.s + (c.o ? " · Oversize" : "")));
     var p = el("span", "tp", c.st === "sold" ? "Sold" : c.st === "unlisted" ? "Not listed" : money(c.p));
     if (c.w) { var w = el("s", "was", money(c.w)); p.appendChild(document.createTextNode(" ")); p.appendChild(w); }
@@ -140,6 +141,7 @@
     body.setAttribute("data-card", c.id);              // which card is open: read by sticker_scan (PKM-031 gate)
     var art = el("div", "sh-art");
     if (c.i) { var im = el("img"); im.src = c.i; im.alt = c.n; art.appendChild(im); }
+    if (c.o) art.appendChild(el("b", "osband", "Oversize"));
     body.appendChild(art);
     var h = el("h2", "sh-name", c.n); h.id = "sh-name"; body.appendChild(h);
     body.appendChild(el("p", "sh-sub", c.s));

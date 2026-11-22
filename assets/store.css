@@ -306,3 +306,12 @@ body:is(.theme-wood, .theme-bloom) {
 .basis-nl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
 .basis-nv { font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
 .basis-f { margin: 0; padding: 9px 15px 11px; border-top: 1px solid rgba(212,173,102,.18); font-size: 12px; color: var(--text-3); }
+
+/* OVERSIZE band (2026-11-21, Jack: "make it like a 'holo' badge but really big"): gold leaf across the bottom of the
+   picture on every tile, bigger on the card sheet. */
+.osband { position: absolute; left: 6px; right: 6px; bottom: 8px; text-align: center; font: 900 14px/1 var(--font);
+  letter-spacing: .18em; text-transform: uppercase; padding: 8px 0; border-radius: 10px; color: #1b1511;
+  background: linear-gradient(180deg, #f3d488, #d4ad66); box-shadow: 0 0 0 2px rgba(255,247,236,.75), 0 8px 18px rgba(0,0,0,.55); }
+.sh-art { position: relative; }
+.sh-art .osband { left: 12px; right: 12px; bottom: 14px; font-size: 24px; padding: 12px 0; border-radius: 14px; }
+.cp .badges .badge + .badge { margin-left: 6px; }
