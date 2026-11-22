@@ -86,7 +86,7 @@
     else art.appendChild(el("span", "noimg"));
     var badge = c.g || (c.c && c.c !== "Near Mint" ? c.c : "");
     if (badge) art.appendChild(el("b", "badge", badge));
-    a.appendChild(art); a.appendChild(el("span", "tn", c.n)); a.appendChild(el("span", "ts", c.s));
+    a.appendChild(art); a.appendChild(el("span", "tn", c.n)); a.appendChild(el("span", "ts", c.s + (c.o ? " · Oversize" : "")));
     var p = el("span", "tp", c.st === "sold" ? "Sold" : c.st === "unlisted" ? "Not listed" : money(c.p));
     if (c.w) { var w = el("s", "was", money(c.w)); p.appendChild(document.createTextNode(" ")); p.appendChild(w); }
     a.appendChild(p);
@@ -105,7 +105,7 @@
       if (kind === "slab" && !c.g) return false;
       if (kind === "raw" && c.g) return false;
       if (!words.length) return true;
-      var hay = (c.n + " " + c.s + " " + c.id + " " + (c.g || "") + " " + (c.v || "")).toLowerCase();
+      var hay = (c.n + " " + c.s + " " + c.id + " " + (c.g || "") + " " + (c.v || "") + (c.o ? " oversize jumbo" : "")).toLowerCase();
       return words.every(function (w) { return hay.indexOf(w) !== -1; });
     });
     view.sort(function (a, b) {
@@ -144,7 +144,7 @@
     var h = el("h2", "sh-name", c.n); h.id = "sh-name"; body.appendChild(h);
     body.appendChild(el("p", "sh-sub", c.s));
     var chips = el("div", "chips");
-    [c.g || c.c, c.v, c.l === "JP" ? "Japanese" : ""].forEach(function (t) { if (t) chips.appendChild(el("span", "chip", t)); });
+    [c.g || c.c, c.v, c.l === "JP" ? "Japanese" : "", c.o ? "Oversize (jumbo)" : ""].forEach(function (t) { if (t) chips.appendChild(el("span", "chip", t)); });
     body.appendChild(chips);
     if (c.st === "sold" || c.st === "unlisted") {
       body.appendChild(el("div", "soldmsg", c.st === "sold" ? "This one found a new home. Here are a few like it."
